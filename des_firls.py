@@ -43,7 +43,7 @@ def plot(taps, fs, des, axs, method, color='blue', alpha=1.0):
     axs[2].set_xlim(-0.5, 0.5)
     axs[2].set_xticks(np.arange(-0.5, 0.5, 0.02), minor=True)
     yt_min = min(f_response[f_response > -420]) - 10
-    axs[2].set_ylim(yt_min, 10.0)
+    axs[2].set_ylim(yt_min, 20.0)
     axs[2].set_yticks(np.arange(yt_min, 10.0, (10 - yt_min) / 5))
     axs[2].set_xlabel('Frequency')
     axs[2].set_ylabel('Gain (dB)')
@@ -177,9 +177,28 @@ def conv_to_remez(bands, desired):
 
 
 if __name__ == '__main__':
+
+    def deemph_spec():
+        def rolloff(f):
+            return (math.log10(f) - 3.0) * -20
+
+        points = [(10.0, -5.0), (30.0, 4.0), (100.0, 7.0),
+                  (200.0, 12.0), (250.0, 11.5)]
+
+        for f in np.linspace(300, 7000, 200):
+            points.append((f, rolloff(f)))
+
+        freqs = []
+        gains = []
+
+        for f, g in points:
+            freqs.append(f / 12500)
+            gains.append(math.pow(10, g / 20))
+
+        return freqs, gains
+
     NUM_TAPS = 151
     TRANS_WIDTH = 0.01
-    all_taps = []
 
     data = {
         "Hilbert transformer": (
@@ -200,17 +219,17 @@ if __name__ == '__main__':
         "sqw": (
             [0.0, 0.1 - TRANS_WIDTH, 0.1, 0.2 - TRANS_WIDTH, 0.2, 0.3 -
                 TRANS_WIDTH, 0.3, 0.4 - TRANS_WIDTH, 0.4, 0.5],
-            [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], False)
+            [0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0], False),
+        "deemph": (
+            *deemph_spec(), False)
     }
 
     for name, (bands, desired, antis) in data.items():
         taps, fs, des = des_firls(NUM_TAPS, bands, desired,    antis)
 
-        all_taps.append(taps)
-
         bands_remez, des_remez = conv_to_remez(bands, desired)
 
-        if name != 'allpass':
+        if not name in ['allpass', 'deemph']:
             taps_test = np.flip(sig.remez(
                 NUM_TAPS, bands_remez, des_remez, type='hilbert' if antis else 'bandpass'))
 
@@ -223,7 +242,7 @@ if __name__ == '__main__':
             ax.grid(which='minor', alpha=0.2)
 
         plot(taps, fs, des, axs, "Least-Squares")
-        if name != 'allpass':
+        if not name in ['allpass', 'deemph']:
             plot(taps_test, None, None, axs,
                  "Parks-McClellan (Remez)", color='gray', alpha=0.5)
 
