@@ -11,7 +11,7 @@ def to_hilb(a):
 
 
 # taps of a two-branch, two-section, lowpass half-band filter
-alphas = [6.38129176e-01,  3.61653339e-01, 1.07776214e-01, 8.81130295e-01]
+alphas = [6.27978583e-01, 3.56629192e-01, 1.07224663e-01, 8.74907424e-01]
 alphas = np.array(alphas)
 
 b00 = [alphas[0], 0, 1]
@@ -83,18 +83,14 @@ print(list(map(float, bq)), list(map(float, aq)))
 w, hi = sig.freqz(bi, ai, whole=True)
 w, hq = sig.freqz(bq, aq, whole=True)
 plt.plot(w, 20 * np.log10(np.abs((hi + 1j * hq) / 2)))
-plt.ylim(-60, 1)
+plt.ylim(-80, 1)
+plt.ylabel("Magnitude (dB)")
+plt.xlabel("radian/sample")
+plt.grid(True)
 plt.show()
 
-x = np.sin(2 * np.pi * 250 * np.linspace(0, 0.1, 100)) * np.sin(
-    2 * np.pi * 5 * np.linspace(0, 0.1, 100)
-)
-x_a = sig.hilbert(x)
-y_i = sig.lfilter(bi, ai, x)
-y_q = sig.lfilter(bq, aq, x)
-
-plt.plot(x)
-plt.plot(np.abs(y_i + y_q * 1j))
-plt.plot(np.abs(x_a))
-plt.legend()
+plt.plot(w, np.unwrap(np.angle(hq) - np.angle(hi)))
+plt.ylabel("Phase difference (radian)")
+plt.xlabel("radian/sample")
+plt.grid(True)
 plt.show()
