@@ -22,16 +22,19 @@ def H(x, z):
     return np.abs(H0 + H1) / 2
 
 
-def residuals(ws, ds, x):
-    ret = []
+def H_mag(ws, ds, l1, x):
+    res = []
     fun = H
 
     for w, d in zip(ws, ds):
         z = np.exp(1j * w)
         mag = fun(x, z)
-        ret.append(d - mag)
+        res.append(d - mag)
 
-    return np.array(ret)
+    if l1:
+        return np.sum(np.abs(res))
+    else:
+        return np.sum(np.square(res))
 
 
 def des_mag_response(w0, tw, w_step=0.01, As=180, restrict_transition=False):
@@ -95,15 +98,15 @@ w0 = np.pi * (1.0 / 2.0)
 tw = w0 / (2 * SECTIONS)
 ws, ds = des_mag_response(w0, tw, 0.01, 60, restrict_transition=False)
 
-res = partial(residuals, ws, ds)
+res = partial(H_mag, ws, ds, True)
 results = []
 for i in range(10):
     x0 = np.random.uniform(0, 0.99, SECTIONS * 2)
-    res_1 = optimize.least_squares(res, x0, bounds=(0, 0.99), loss="soft_l1")
+    res_1 = optimize.minimize(res, x0, bounds=[(0, 0.99)] * (SECTIONS * 2))
     # print(f"{res_1.success}")
-    # print(f"Cost: {res_1.cost}")
+    # print(f"Cost: {res_1.fun}")
     if res_1.success:
-        results.append((res_1.cost, res_1.x))
+        results.append((res_1.fun, res_1.x))
 
 results = sorted(results, key=lambda x: x[0])
 print(f"Lowest cost: {results[0][0]}")

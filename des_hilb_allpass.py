@@ -15,7 +15,7 @@ def tfmul(a, b):
 
 
 # taps of a two-branch, two-section, lowpass half-band filter
-alphas = [6.27978583e-01, 3.56629192e-01, 1.07224663e-01, 8.74907424e-01]
+alphas = [1.05128707e-01, 8.72751431e-01, 6.23161614e-01, 3.51738099e-01]
 alphas = np.array(alphas)
 
 b0 = []
