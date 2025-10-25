@@ -24,7 +24,12 @@ This repo gathers code related to Hilbert transformer (FIR) filter design.
 ## Extras
 
 The script `allpass_halfband_des.py` allows for designing an allpass IIR halfband filter
-that can easily be converted to an allpass Hilbert transformer via the script `des_hilb_allpass.py`.
+with following structure:
+
+![filter_block](plots/allpass_halfband.png)
+
+Number of sections in each branch is configurable. By default it is two.
+Such filter can easily be converted to an allpass Hilbert transformer via the script `des_hilb_allpass.py`.
 
 Halfband allpass IIR filter:
 
